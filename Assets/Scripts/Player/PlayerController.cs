@@ -1,25 +1,18 @@
 using System.Collections;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody))]
 public class PlayerController : MonoBehaviour
 {
-    Rigidbody rb;
-    readonly Vector3 rightposition = new(1, 0, 0);
+    readonly Vector3 rightposition = new(2.5f, 0, 0);
     readonly Vector3 middlePosition = new(0, 0, 0);
     bool positionChanged;
     new Collider collider;
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody>();
         collider = GetComponent<Collider>();
     }
 
-    void Start()
-    {
-        rb.freezeRotation = true;
-    }
 
     internal void MoveRight()
     {
@@ -27,12 +20,12 @@ public class PlayerController : MonoBehaviour
 
         if (!positionChanged && transform.position == -rightposition)
         {
-            transform.position = middlePosition;
+            transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
             positionChanged = true;
         }
         else if (!positionChanged)
         {
-            transform.position = rightposition;
+            transform.position = Vector3.Lerp(transform.position, rightposition, 1);
             positionChanged = true;
         }
     }
@@ -40,14 +33,14 @@ public class PlayerController : MonoBehaviour
     {
         positionChanged = false;
 
-        if(!positionChanged && transform.position == rightposition)
+        if (!positionChanged && transform.position == rightposition)
         {
-            transform.position = middlePosition;
+            transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
             positionChanged = true;
         }
-        else if(!positionChanged)
+        else if (!positionChanged)
         {
-            transform.position = -rightposition; 
+            transform.position = Vector3.Lerp(transform.position, -rightposition, 1);
             positionChanged = true;
         }
     }
