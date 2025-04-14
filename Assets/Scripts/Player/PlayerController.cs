@@ -1,4 +1,5 @@
 using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -7,10 +8,12 @@ public class PlayerController : MonoBehaviour
     readonly Vector3 middlePosition = new(0, 0, 0);
     bool positionChanged;
     new Collider collider;
+    Transform cart;
 
     void Awake()
     {
         collider = GetComponent<Collider>();
+        cart = GameObject.FindGameObjectWithTag("MineCart").transform;
     }
 
 
@@ -50,6 +53,13 @@ public class PlayerController : MonoBehaviour
         StartCoroutine(WaitForSlide());
     }
 
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.transform.CompareTag("Barrier"))
+        {
+            Time.timeScale = 0f;
+        }
+    }
     IEnumerator WaitForSlide()
     {
         yield return new WaitForSeconds(1.5f);
