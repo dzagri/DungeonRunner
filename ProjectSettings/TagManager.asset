@@ -6,6 +6,8 @@ TagManager:
   tags:
   - MineCart
   - Barrier
+  - Coin
+  - MagnetArea
   layers:
   - Default
   - TransparentFX

@@ -14,36 +14,39 @@ public class InputManager : MonoBehaviour
     }
     void Update()
     {
-        if(Input.touchCount > 0)
+        if (!GameManager.instance.playerDead)
         {
-            Touch touch = Input.GetTouch(0);
+            if (Input.touchCount > 0)
+            {
+                Touch touch = Input.GetTouch(0);
 
-            if(touch.phase == TouchPhase.Began)
-            {
-                startTouchPos = touch.position;
-            }
-            if(touch.phase == TouchPhase.Ended)
-            {
-                endTouchPos = touch.position;
-                Vector2 swipeDelta = endTouchPos - startTouchPos;
-                if(swipeDelta.magnitude > swipreThreshHold)
+                if (touch.phase == TouchPhase.Began)
                 {
-                    if(Mathf.Abs(swipeDelta.x) > Mathf.Abs(swipeDelta.y))
+                    startTouchPos = touch.position;
+                }
+                if (touch.phase == TouchPhase.Ended)
+                {
+                    endTouchPos = touch.position;
+                    Vector2 swipeDelta = endTouchPos - startTouchPos;
+                    if (swipeDelta.magnitude > swipreThreshHold)
                     {
-                        if(swipeDelta.x > 0)
+                        if (Mathf.Abs(swipeDelta.x) > Mathf.Abs(swipeDelta.y))
                         {
-                            playerController.MoveRight();
+                            if (swipeDelta.x > 0)
+                            {
+                                playerController.MoveRight();
+                            }
+                            else
+                            {
+                                playerController.MoveLeft();
+                            }
                         }
                         else
                         {
-                            playerController.MoveLeft();
-                        }
-                    }
-                    else
-                    {
-                        if(swipeDelta.y < 0)
-                        {
-                            playerController.Slide();
+                            if (swipeDelta.y < 0)
+                            {
+                                playerController.Slide();
+                            }
                         }
                     }
                 }

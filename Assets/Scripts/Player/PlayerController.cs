@@ -1,22 +1,40 @@
 using System.Collections;
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    readonly Vector3 rightposition = new(2.5f, 0, 0);
-    readonly Vector3 middlePosition = new(0, 0, 0);
+    Vector3 rightposition;
+    Vector3 middlePosition;
     bool positionChanged;
     new Collider collider;
-    Transform cart;
-
+    readonly int minHeartAmount = 0;
+    internal readonly int maxHeartAmount = 3;
+    internal int currentHeartAmount;
+    internal bool healable;
+    bool damage;
+    private void Start()
+    {
+        rightposition = new(2.5f, transform.position.y, transform.position.z);
+        middlePosition = new(0, transform.position.y, transform.position.z);
+        currentHeartAmount = maxHeartAmount;
+        GameManager.instance.heartAmount = currentHeartAmount;
+    }
     void Awake()
     {
         collider = GetComponent<Collider>();
-        cart = GameObject.FindGameObjectWithTag("MineCart").transform;
     }
-
-
+    private void Update()
+    {
+        Health();
+    }
+    void Health()
+    {
+        GameManager.instance.heartAmount = currentHeartAmount;
+        if(currentHeartAmount <= minHeartAmount)
+        {
+            GameManager.instance.playerDead = true;
+        }
+    }
     internal void MoveRight()
     {
         positionChanged = false;
@@ -57,7 +75,8 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.transform.CompareTag("Barrier"))
         {
-            Time.timeScale = 0f;
+            collision.gameObject.SetActive(false);
+            currentHeartAmount--;
         }
     }
     IEnumerator WaitForSlide()
