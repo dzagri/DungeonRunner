@@ -6,22 +6,20 @@ public class PlayerController : MonoBehaviour
     Vector3 rightposition;
     Vector3 middlePosition;
     bool positionChanged;
-    new Collider collider;
+    new CapsuleCollider collider;
     readonly int minHeartAmount = 0;
     internal readonly int maxHeartAmount = 3;
     internal int currentHeartAmount;
     internal bool healable;
-    bool damage;
+    readonly float slideTimer = 1.2f;
+
+    void Awake() =>collider = GetComponent<CapsuleCollider>();
     private void Start()
     {
         rightposition = new(2.5f, transform.position.y, transform.position.z);
         middlePosition = new(0, transform.position.y, transform.position.z);
         currentHeartAmount = maxHeartAmount;
         GameManager.instance.heartAmount = currentHeartAmount;
-    }
-    void Awake()
-    {
-        collider = GetComponent<Collider>();
     }
     private void Update()
     {
@@ -44,7 +42,7 @@ public class PlayerController : MonoBehaviour
             transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
             positionChanged = true;
         }
-        else if (!positionChanged)
+        else
         {
             transform.position = Vector3.Lerp(transform.position, rightposition, 1);
             positionChanged = true;
@@ -59,30 +57,26 @@ public class PlayerController : MonoBehaviour
             transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
             positionChanged = true;
         }
-        else if (!positionChanged)
+        else
         {
             transform.position = Vector3.Lerp(transform.position, -rightposition, 1);
             positionChanged = true;
         }
     }
-    internal void Slide()
+    internal IEnumerator Slide()
     {
-        collider.enabled = false;
-        StartCoroutine(WaitForSlide());
+        collider.height = 1;
+        yield return new WaitForSeconds(slideTimer);
+        collider.height = 2;
+        yield return null;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+        collision.gameObject.SetActive(false);
         if (collision.transform.CompareTag("Barrier"))
         {
-            collision.gameObject.SetActive(false);
             currentHeartAmount--;
         }
-    }
-    IEnumerator WaitForSlide()
-    {
-        yield return new WaitForSeconds(1.5f);
-        collider.enabled = true;
-        yield return null;
     }
 }

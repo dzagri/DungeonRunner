@@ -17,6 +17,7 @@ public class PlatformController : MonoBehaviour
         if(transform.position.z <= -100f)
         {
             gameObject.SetActive(false);
+            
             PlatformManager.instance.isAsked = true;
         }
     }

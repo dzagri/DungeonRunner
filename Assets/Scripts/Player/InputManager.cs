@@ -45,7 +45,7 @@ public class InputManager : MonoBehaviour
                         {
                             if (swipeDelta.y < 0)
                             {
-                                playerController.Slide();
+                                StartCoroutine(playerController.Slide());
                             }
                         }
                     }
