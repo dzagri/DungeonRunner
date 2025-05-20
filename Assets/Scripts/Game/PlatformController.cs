@@ -5,14 +5,9 @@ using UnityEngine;
 public class PlatformController : MonoBehaviour
 {
     float speed;
-
-    void Start()
-    {
-        speed = 6;
-    }
-
     void Update()
     {
+        speed = GameManager.instance.platformSpeed;
         transform.position -= new Vector3(0, 0, speed * Time.deltaTime);
         if(transform.position.z <= -100f)
         {

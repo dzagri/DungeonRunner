@@ -1,3 +1,4 @@
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,20 +6,28 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+    internal int coins;
+    public int heartAmount;
     internal float currentScore;
     internal float highScore;
-    internal bool playerDead;
-    float scoreSpeed;
+    internal float scoreSpeed;
     internal float scoreMultiplier;
-    internal int coins;
-    internal int heartAmount;
+    internal float platformSpeed = 5;
+    internal bool playerDead;
+    public bool playerDamage;
+    public bool gameRestart;
+    readonly float speedIncreaseInterval = 30f;
+    readonly float scoreSpeedIncreaseAmount = 0.3f;
+    float timeSinceLastIncrease = 0f;
+
+    public event Action OnGameOver;
     private enum GameState
     {
         running,
         paused
     }
     private GameState currentState;
-    private void Awake()
+    void Awake()
     {
         scoreSpeed = 0.4f;
         scoreMultiplier = 1.0f;
@@ -32,10 +41,74 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-    private void Update()
+
+    public void GameStart()
+    {
+        currentState = GameState.running;
+        playerDead = false;
+        Time.timeScale = 1f;
+        currentScore = 0;
+        coins = 0;
+        platformSpeed = 5;
+        scoreSpeed = 0.4f;
+    }
+
+    void Update()
     {
         StateManager();
         AddScore();
+    }
+
+    void OnEnable() => SceneManager.sceneLoaded += OnSceneLoaded;
+
+    void OnDisable() => SceneManager.sceneLoaded -= OnSceneLoaded;
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode) => GameStart();
+    void StateManager()
+    {
+        if (playerDead && currentState != GameState.paused)
+        {
+            currentState = GameState.paused;
+            OnGameOver?.Invoke();
+        }
+        else if (!playerDead)
+        {
+            currentState = GameState.running;
+        }
+
+        GameStates();
+    }
+
+    void SpeedIncrease()
+    {
+        if(SceneManager.GetActiveScene().buildIndex == 1)
+        {
+            timeSinceLastIncrease += Time.deltaTime;
+
+            if (timeSinceLastIncrease >= speedIncreaseInterval)
+            {
+                platformSpeed += 2.5f;
+                scoreSpeed += scoreSpeedIncreaseAmount;
+                timeSinceLastIncrease = 0f;
+            }
+        }
+        else
+        {
+            platformSpeed = 5;
+        }
+    }
+    void GameStates()
+    {
+        switch (currentState)
+        {
+            case GameState.running:
+                if (Time.timeScale != 1f) Time.timeScale = 1f;
+                SpeedIncrease();
+                break;
+            case GameState.paused:
+                if (Time.timeScale != 0f) Time.timeScale = 0f;
+                break;
+        }
     }
     private void AddScore()
     {
@@ -49,36 +122,5 @@ public class GameManager : MonoBehaviour
             highScore = currentScore;
         }
 
-    }
-    void StateManager()
-    {
-        GameStates();
-        if (SceneManager.GetActiveScene().buildIndex == 0)
-        {
-            playerDead = false;
-            currentState = GameState.running;
-            currentScore = 0;
-        }
-        if (!playerDead)
-        {
-            currentState = GameState.running;
-        }
-        else
-        {
-            currentState = GameState.paused;
-        }
-    }
-    void GameStates()
-    {
-        switch (currentState)
-        {
-            case GameState.running:
-                Time.timeScale = 1.0f;
-                break;
-            case GameState.paused:
-                Time.timeScale = 0f;
-                SceneManager.LoadScene(sceneBuildIndex: 0);
-                break;
-        }
     }
 }

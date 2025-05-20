@@ -1,14 +1,17 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class GameUIManager : MonoBehaviour
 {
+    [SerializeField] Transform[] menus;
+    [SerializeField] Image[] heartImages;
     [SerializeField] TMP_Text scoreText;
     [SerializeField] TMP_Text coinText;
-    [SerializeField] Image[] heartImages;
+
+    void Start() => GameManager.instance.OnGameOver += DeathMenu;
+    void OnDisable() => GameManager.instance.OnGameOver -= DeathMenu;
 
     void Update()
     {
@@ -22,31 +25,44 @@ public class GameUIManager : MonoBehaviour
         Hearts();
     }
 
+    public void SceneChange(int index)
+    {
+        GameManager.instance.GameStart();
+        SceneManager.LoadScene(index);
+    }
+
     void Hearts()
     {
-        if (GameManager.instance.heartAmount == 3)
+        switch (GameManager.instance.heartAmount)
         {
-            heartImages[2].color = Color.red;
-            heartImages[1].color = Color.red;
-            heartImages[0].color = Color.red;
-        }
-        else if (GameManager.instance.heartAmount == 2)
-        {
-            heartImages[2].color = Color.gray;
-            heartImages[1].color = Color.red;
-            heartImages[0].color = Color.red;
-        }
-        else if (GameManager.instance.heartAmount == 1)
-        {
-            heartImages[2].color = Color.gray;
-            heartImages[1].color = Color.gray;
-            heartImages[0].color = Color.red;
-        }
-        else
-        {
-            heartImages[2].color = Color.gray;
-            heartImages[1].color = Color.gray;
-            heartImages[0].color = Color.gray;
+            case 0:
+                heartImages[2].color = Color.gray;
+                heartImages[1].color = Color.gray;
+                heartImages[0].color = Color.gray;
+                break;
+            case 1:
+                heartImages[2].color = Color.gray;
+                heartImages[1].color = Color.gray;
+                heartImages[0].color = Color.red;
+                break;
+            case 2:
+                heartImages[2].color = Color.gray;
+                heartImages[1].color = Color.red;
+                heartImages[0].color = Color.red;
+                break;
+            case 3:
+                heartImages[2].color = Color.red;
+                heartImages[1].color = Color.red;
+                heartImages[0].color = Color.red;
+                break;
         }
     }
+
+    void DeathMenu()
+    {
+        menus[0].gameObject.SetActive(false);
+        menus[1].gameObject.SetActive(true);
+    }
+
+    
 }

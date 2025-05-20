@@ -4,15 +4,14 @@ public class Spike : MonoBehaviour
 {
     Animator animator;
 
-    void Start()
+    void Start() => animator = GetComponent<Animator>();
+    private void OnTriggerEnter(Collider collider)
     {
-        animator = GetComponent<Animator>();
-    }
-    private void OnTriggerEnter(Collider other)
-    {
-        if (other.transform.CompareTag("Player"))
+        if (collider.gameObject.CompareTag("Player"))
         {
             animator.SetTrigger("Activate");
+            GameManager.instance.playerDamage = true;
         }
     }
+    
 }

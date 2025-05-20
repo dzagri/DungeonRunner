@@ -3,23 +3,24 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    Vector3 rightposition;
-    Vector3 middlePosition;
-    bool positionChanged;
     new CapsuleCollider collider;
     readonly int minHeartAmount = 0;
     internal readonly int maxHeartAmount = 3;
     internal int currentHeartAmount;
     internal bool healable;
     readonly float slideTimer = 1.2f;
+    readonly Vector3[] lanes = new Vector3[3];
+    int currentLane;
 
     void Awake() =>collider = GetComponent<CapsuleCollider>();
     private void Start()
     {
-        rightposition = new(2.5f, transform.position.y, transform.position.z);
-        middlePosition = new(0, transform.position.y, transform.position.z);
         currentHeartAmount = maxHeartAmount;
-        GameManager.instance.heartAmount = currentHeartAmount;
+
+        lanes[0] = new Vector3(2.5f, transform.position.y, transform.position.z);
+        lanes[1] = new Vector3(0f, transform.position.y, transform.position.z);
+        lanes[2] = new Vector3(-2.5f, transform.position.y, transform.position.z);
+        currentLane = 1;
     }
     private void Update()
     {
@@ -28,6 +29,11 @@ public class PlayerController : MonoBehaviour
     void Health()
     {
         GameManager.instance.heartAmount = currentHeartAmount;
+        if (GameManager.instance.playerDamage)
+        {
+            GameManager.instance.playerDamage = false;
+            currentHeartAmount--;
+        }
         if(currentHeartAmount <= minHeartAmount)
         {
             GameManager.instance.playerDead = true;
@@ -35,33 +41,35 @@ public class PlayerController : MonoBehaviour
     }
     internal void MoveRight()
     {
-        positionChanged = false;
-
-        if (!positionChanged && transform.position == -rightposition)
+        if (currentLane > 0)
         {
-            transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
-            positionChanged = true;
-        }
-        else
-        {
-            transform.position = Vector3.Lerp(transform.position, rightposition, 1);
-            positionChanged = true;
+            currentLane--;
+            StartCoroutine(MoveToLane(currentLane));
         }
     }
     internal void MoveLeft()
     {
-        positionChanged = false;
+        if (currentLane < 2)
+        {
+            currentLane++;
+            StartCoroutine(MoveToLane(currentLane));
+        }
+    }
 
-        if (!positionChanged && transform.position == rightposition)
+    IEnumerator MoveToLane(int lane)
+    {
+        Vector3 start = transform.position;
+        Vector3 end = new(lanes[lane].x, transform.position.y, transform.position.z);
+        float elapsed = 0f;
+        float duration = 0.2f;
+
+        while (elapsed < duration)
         {
-            transform.position = Vector3.Lerp(transform.position, middlePosition, 1);
-            positionChanged = true;
+            transform.position = Vector3.Lerp(start, end, elapsed / duration);
+            elapsed += Time.deltaTime;
+            yield return null;
         }
-        else
-        {
-            transform.position = Vector3.Lerp(transform.position, -rightposition, 1);
-            positionChanged = true;
-        }
+        transform.position = end;
     }
     internal IEnumerator Slide()
     {
@@ -71,12 +79,5 @@ public class PlayerController : MonoBehaviour
         yield return null;
     }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        collision.gameObject.SetActive(false);
-        if (collision.transform.CompareTag("Barrier"))
-        {
-            currentHeartAmount--;
-        }
-    }
+    
 }
